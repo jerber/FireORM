@@ -38,7 +38,35 @@ def test_queries():
 	print(ts)
 
 
+def test_user_model():
+	class Salesman(Model):
+		name = TextField()
+		company = TextField()
+
+	s = Salesman()
+	s.name = 'Jim'
+	s.save()
+
+	s = Salesman.collection.get(s.id)
+	print(s.name)  # Jim
+
+
+def test_student_model():
+	class Student(Model):
+		name = TextField()
+		school = TextField(required=True, default='UPenn')
+
+		class Meta:
+			collection_name = 'students'
+			fields_to_print = ['name']
+
+	s = Student(name='Amy Gutman')
+	s.save()  # creates a new document in the "students" collection
+	print(s)  #
+
+
 if __name__ == '__main__':
 	# test_teacher_model()
-	print(fireorm.db.conn.__dict__)
-	test_queries()
+	# print(fireorm.db.conn.__dict__)
+	# test_queries()
+	test_student_model()

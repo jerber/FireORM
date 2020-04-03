@@ -41,7 +41,7 @@ class Model(metaclass=ModelMeta):
 		self._init_done = False
 		self.ignore_class_fields = ignore_class_fields
 
-		if '/' in id and not key: key = id
+		if id and '/' in id and not key: key = id
 
 		self.init_variables()
 
