@@ -30,7 +30,7 @@ There are 9 types of builtin fields, consistant with Firestore: `BooleanField`, 
 Each field takes the optional parameters `default ` and `required`. If the field is not set, it will default to the value of `default`. If there is no `default`, the field is not set, and `required == True`, an `Exception` will be raised.
 
 
-#### Fields Examples
+#### Fields Example
 ```python
 class Manager(Model):
 	name = TextField(required=True)
@@ -48,9 +48,26 @@ m.save() # Exception since age is required but not given
 
 ```
 
+You can also add a NestedModel which lets you add a defined class as a Field.
+
+### NestedModel Example
+```python
+class Dog(Model):
+	age = NumberField()
+	owner = Manager(required=True)
+
+dog = Dog()
+dog.age = 3
+dog.owner = Manager(name='Robert California', age=59)
+dog.save()
+
+```
+
 
 ## Collections
 The collection name for a class defaults to the class' name in lowercase. To set the collection name, use the `Meta` class. You can also specify which fields print when printing the class.
+
+### Meta Example
 
 ```python
 class Student(Model):
@@ -65,4 +82,21 @@ s = Student(name='Amy Gutman')
 s.save() # creates a new document in the "students" collection
 print(s) # <*Student* key: students/9AJ5DeSvzfD04uqyhhpL, id: 9AJ5DeSvzfD04uqyhhpL, name: Amy Gutman>
 
+```
+
+You can also inheret classes.
+
+## Inheritance Example
+```python
+class ExchangeStudent(Student):
+	originalCountry = TextField(required=True)
+	
+	class Meta:
+		collection_name = 'exchangeStudents'
+		fields_to_print = None # when this is None or does not exist, it prints all fields. When it is [] it only prints the defaults (key and id).
+
+e = ExchangeStudent(originalCountry='UK')
+print(e.school) # UPenn
+e.save()
+print(e) # <*ExchangeStudent* key: exchangeStudents/XbGdMjo9x9166MvZ79Zr, id: XbGdMjo9x9166MvZ79Zr, name: None, originalCountry: UK, school: UPenn>
 ```
