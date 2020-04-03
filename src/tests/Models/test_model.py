@@ -1,12 +1,17 @@
-import time
+import pytest
 import os
+from datetime import datetime, timedelta, timezone
+import random
+import string
 
-import fireorm
-
-from fireorm.Models import Model, DateModel
-
+from fireorm.Models import DateModel, Model
 from fireorm.Fields import *
+from fireorm import db
 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/jeremyberman/Downloads/my-serv.json'
+
+def gen_random_str(n=8):
+	return ''.join(random.choice(string.ascii_letters) for _ in range(n))
 
 class Pet(DateModel):
 	type = TextField(required=True, default='Dog')
@@ -23,50 +28,66 @@ class Teacher(DateModel):
 		fields_to_print = ['createdAt']
 
 
-def test_teacher_model():
-	t = Teacher()
-	t.age = 20
-	t.name = 'char'
-	batch = fireorm.batch()
-	t.save(batch=batch)
-	batch.commit()
-	print(t)
+class Manager(Model):
+	name = TextField(required=True)
+	age = NumberField(required=True)
+	company = TextField(required=True, default='Dunder Mifflin')
+	startedWorkingAt = DateField()
 
 
-def test_queries():
-	ts = Teacher.collection.order_by('createdAt', 'asc').limit(2).stream()
-	print(ts)
+class Student(Model):
+	name = TextField()
+	school = TextField(required=True, default='UPenn')
 
+	class Meta:
+		collection_name = 'students'
+		fields_to_print = ['name']
 
-def test_user_model():
-	class Salesman(Model):
-		name = TextField()
-		company = TextField()
+def test_connection():
+	assert db.conn.project == 'europe-tester'
 
-	s = Salesman()
-	s.name = 'Jim'
-	s.save()
+def test_basic_model():
+	manager = Manager(name='Jerry', age = 21)
+	assert manager.name == 'Jerry'
+	assert manager.age == 21
+	assert manager.company == 'Dunder Mifflin'
+	assert manager.startedWorkingAt == None
+	manager.save()
+	print(manager, manager)
+	# now make sure it saved, and also that key and id are interchangable
+	print("KEY FIRST", manager.key)
+	print(Manager.collection.get(manager.key))
+	assert Manager.collection.get(manager.id) == Manager.collection.get(manager.key)
+	new_manager = Manager.collection.get(manager.id)
+	assert new_manager.startedWorkingAt == None
+	now = datetime.utcnow().replace(tzinfo=timezone.utc)
+	new_manager.startedWorkingAt = now
+	new_manager.save()
+	third_man = Manager.collection.get(new_manager.id)
+	assert third_man.startedWorkingAt == now
 
-	s = Salesman.collection.get(s.id)
-	print(s.name)  # Jim
+def test_querying_of_models():
+	# first make sure meta is working
+	s = Student()
+	# test default
+	s.school = 'UPenn'
+	assert 'students' == s.key.split('/')[0]
+	m = Manager()
+	assert  'manager' == m.key.split('/')[0]
 
+	starting_time = datetime.utcnow()
+	c = Student(name=gen_random_str()).save()
+	m = Student(name=gen_random_str()).save()
 
-def test_student_model():
-	class Student(Model):
-		name = TextField()
-		school = TextField(required=True, default='UPenn')
+	arr_of_names = [c.name, m.name]
 
-		class Meta:
-			collection_name = 'students'
-			fields_to_print = ['name']
+	students = Student.collection.where('name', 'in', arr_of_names).stream()
+	print(students)
+	assert len(students) == 2
+	c.delete()
+	m.delete()
 
-	s = Student(name='Amy Gutman')
-	s.save()  # creates a new document in the "students" collection
-	print(s)  #
+	students = Student.collection.where('name', 'in', arr_of_names).stream()
+	print(students)
+	assert len(students) == 0
 
-
-if __name__ == '__main__':
-	# test_teacher_model()
-	# print(fireorm.db.conn.__dict__)
-	# test_queries()
-	test_student_model()

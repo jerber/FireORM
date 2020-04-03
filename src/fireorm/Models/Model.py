@@ -40,7 +40,6 @@ class Model(metaclass=ModelMeta):
 	def __init__(self, id=None, key=None, parent=None, from_db=False, ignore_class_fields=False, **kwargs):
 		self._init_done = False
 		self.ignore_class_fields = ignore_class_fields
-
 		if id and '/' in id and not key: key = id
 
 		self.init_variables()
@@ -201,7 +200,7 @@ class Model(metaclass=ModelMeta):
 		return ', '.join(strings)
 
 	def __repr__(self):
-		default_print = f'<*{self.get_class_name()}* key: {self._key}, id: {self._id}>'
+		default_print = f'<*{self.__class__.__name__}* key: {self._key}, id: {self._id}>'
 		printable_strings = self.get_printable_fields_str()
 		if printable_strings: default_print = f"{default_print[:-1]}, {printable_strings}>"
 		return default_print
@@ -228,7 +227,7 @@ class Model(metaclass=ModelMeta):
 	def get_subcollections(self):
 		return self.get_collection().document(self.id).get_subcollections()
 
-	def update(self, batch=None, create=False):
+	def update(self, batch=None, create=False, return_result=False):
 		if not self.ignore_class_fields: self.validate_db_fields()
 		new = self.to_dict()
 		update_d = new if not self._kwargs_from_db else make_update_obj(original=self._kwargs_from_db, new=new)
@@ -237,7 +236,7 @@ class Model(metaclass=ModelMeta):
 			res = self._ref.update(update_d) if not batch else batch.update(self._ref, update_d)
 			# TODO if there are other fields in the DB this will not kill them
 			if self._kwargs_from_db: self._kwargs_from_db = copy.deepcopy(new)
-			return res
+			return self if not return_result else res
 		except Exception as e:
 			if hasattr(e, 'message') and 'No document to update:' in e.message:
 				if create:
@@ -247,12 +246,17 @@ class Model(metaclass=ModelMeta):
 					raise (e)
 
 	def delete(self, batch=None):
+		print("DELETING....")
 		return self._ref.delete() if not batch else batch.delete(self._ref)
 
+
+	def __eq__(self, other):
+		return self.__class__ == other.__class__ and self.__dict__ == other.__dict__
+
 	# TODO should I make merge true default?
-	def save(self, batch=None, merge=False):
+	def save(self, batch=None, merge=False, return_result=False):
 		if not self.ignore_class_fields: self.validate_db_fields()
 		new = self.to_dict()
 		res = self._ref.set(new, merge=merge) if not batch else batch.set(self._ref, new, merge=merge)
 		if not merge: self._kwargs_from_db = copy.deepcopy(new)
-		return res
+		return self if not return_result else res
