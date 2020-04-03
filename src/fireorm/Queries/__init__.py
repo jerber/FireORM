@@ -1,0 +1,1 @@
+from fireorm.Queries.Query import Query
