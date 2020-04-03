@@ -86,7 +86,7 @@ print(s) # <*Student* key: students/9AJ5DeSvzfD04uqyhhpL, id: 9AJ5DeSvzfD04uqyhh
 
 You can also inheret classes.
 
-## Inheritance Example
+### Inheritance Example
 ```python
 class ExchangeStudent(Student):
 	originalCountry = TextField(required=True)
@@ -99,4 +99,16 @@ e = ExchangeStudent(originalCountry='UK')
 print(e.school) # UPenn
 e.save()
 print(e) # <*ExchangeStudent* key: exchangeStudents/XbGdMjo9x9166MvZ79Zr, id: XbGdMjo9x9166MvZ79Zr, name: None, originalCountry: UK, school: UPenn>
+```
+
+## Queries
+You can make queries with the same syntax you would using the Python firebase-admin SDK. But FireORM returns the objects.
+
+### Queries Example
+```python
+managers = Manager.collection.where('name', '==', 'Michael Scott').limit(1).stream()
+print(managers) # [<*Manager* key: manager/Z8S75KU2n7QQnIm2cExy, id: Z8S75KU2n7QQnIm2cExy, age: 45, company: Dunder Mifflin, name: Michael Scott, startedWorkingAt: None>]
+
+manager = Manager.collection.get('Z8S75KU2n7QQnIm2cExy')
+print(manager) # <*Manager* key: manager/Z8S75KU2n7QQnIm2cExy, id: Z8S75KU2n7QQnIm2cExy, age: 45, company: Dunder Mifflin, name: Michael Scott, startedWorkingAt: None>
 ```
