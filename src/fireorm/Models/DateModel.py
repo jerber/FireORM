@@ -5,11 +5,12 @@ from fireorm.utils import make_update_obj
 
 
 class DateModel(Model):
-	createdAt = DateField(required=True, default=datetime.utcnow, call=True)
+	createdAt = DateField(required=True)
 	lastUpdated = DateField(required=True, default=datetime.utcnow, call=True)
 
-	def save(self, lastUpdated=None, **kwargs):
+	def save(self, lastUpdated=None, createdAt=None, **kwargs):
 		if not lastUpdated: self.lastUpdated = datetime.utcnow()
+		if not createdAt: self.createdAt = datetime.utcnow()
 		super().save(**kwargs)
 
 	def update(self, lastUpdated=None, **kwargs):
