@@ -10,7 +10,7 @@ class DateModel(Model):
 
 	def save(self, lastUpdated=None, createdAt=None, **kwargs):
 		if not lastUpdated: self.lastUpdated = datetime.utcnow()
-		if not createdAt: self.createdAt = datetime.utcnow()
+		if not createdAt and not self.createdAt and not self.ignore_class_fields: self.createdAt = datetime.utcnow()
 		super().save(**kwargs)
 
 	def update(self, lastUpdated=None, **kwargs):
