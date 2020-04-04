@@ -37,9 +37,11 @@ class Model(metaclass=ModelMeta):
 		self._og_kwargs = {}
 		self.nested = False
 
-	def __init__(self, id=None, key=None, parent=None, from_db=False, ignore_class_fields=False, **kwargs):
+	def __init__(self, id=None, key=None, parent=None, from_db=False, ignore_defaults=False, ignore_class_fields=False, **kwargs):
 		self._init_done = False
 		self.ignore_class_fields = ignore_class_fields
+		if not self.ignore_class_fields: self.ignore_class_fields = ignore_defaults
+
 		if id and '/' in id and not key: key = id
 
 		self.init_variables()
