@@ -9,12 +9,13 @@ class DateModel(Model):
 	lastUpdated = DateField(required=True)
 
 	def save(self, lastUpdated=None, createdAt=None, **kwargs):
-		if not lastUpdated: self.lastUpdated = datetime.utcnow()
+		self.lastUpdated = lastUpdated or datetime.utcnow()
+		self.createdAt = createdAt
 		if not createdAt and not self.createdAt and not self.ignore_class_fields: self.createdAt = datetime.utcnow()
 		super().save(**kwargs)
 
 	def update(self, lastUpdated=None, **kwargs):
-		if not lastUpdated: self.lastUpdated = datetime.utcnow()
+		self.lastUpdated = lastUpdated or datetime.utcnow()
 		super().update(**kwargs)
 
 	def to_dict(self, nested=False):
