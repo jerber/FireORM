@@ -10,7 +10,7 @@ class Field:
 
 		if self.value is None and self.default is not None:
 			self.value = self.default if not self.call else self.default()
-			self.used_default
+			self.used_default = True
 
 		if self.value is not None:
 			self.validate(self.value)

@@ -150,9 +150,9 @@ class Model(metaclass=ModelMeta):
 	def add_defaults_to_self_first(self):
 		for field, value in self._class_fields.items():
 			if value.default is None and isinstance(self, NullField):
-				setattr(self, field, value.value)
+				setattr(self, field, copy.deepcopy(value.value))
 			elif value.default is not None:
-				setattr(self, field, value.value)
+				setattr(self, field, copy.deepcopy(value.value))
 
 	def validate_db_fields(self):
 		for field, value in self._class_fields.items():
