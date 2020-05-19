@@ -71,13 +71,14 @@ class Query:
 		docs = list(self.firebase_query.stream(**kwargs))
 		return [self.cls(from_db=True, key=self.key_from_ref(doc.reference), **doc.to_dict()) for doc in docs]
 
-	def get(self, id=None, **kwargs):
+	def get(self, id=None, create=False, **kwargs):
 		paths = id.split('/')
 		if len(paths) == 2: id = paths[-1]
 		doc = self.firebase_query.get(**kwargs) if not id else self.firebase_query.document(id).get(**kwargs)
-		if not 'DocumentSnapshot' in (str(type(doc))): return None
+		if 'DocumentSnapshot' not in (str(type(doc))): return None
 		d = doc.to_dict()
-		if not d: return None
+		if not d:
+			return None if not create else self.cls(id=id)
 		return self.cls(from_db=True, key=self.key_from_ref(doc.reference), **doc.to_dict())
 
 	def get_all(self, ids, **kwargs):
