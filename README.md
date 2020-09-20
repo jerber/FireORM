@@ -1,3 +1,5 @@
+This is depreciated. Newer version is: https://github.com/jerber/MagicDB.
+
 # FireORM
 The easiest way to use Firestore with python.
 
